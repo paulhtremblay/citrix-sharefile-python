@@ -7,8 +7,8 @@ def get_headers(host, client_id, client_secret, user_name, user_password):
     headers = {'Content-Type':'application/x-www-form-urlencoded'}
     data = {'grant_type':'password', 'client_id': client_id, 'client_secret': client_secret,
               'username': user_name, 'password': user_password}
-
     response = requests.post(url, data = data)
+    # in production, check to see if response.status_code == 200, check for connection timeout, etc.
     return  {'Authorization': 'Bearer {access_token}'.format(access_token = response.json()['access_token'])}
 
 def post_file_to_share(host, headers, folder_id):
@@ -20,10 +20,13 @@ def post_file_to_share(host, headers, folder_id):
     response_iniital = requests.post(url= 'https://{host}/sf/v3/Items({folder_id})/Upload2'.format(folder_id = folder_id, host = host), 
             data = {"Method":"Method", "Raw": False }, headers = headers,
             )
+    # in production, check to see if response_iniital.status_code == 200, check for connection timeout, etc.
     # Create files dict
     files = {'File1': ('new_file_name_on_share.txt', open(filepath, 'rb'), 'text/plain')}
     # post the file
     response_files = requests.post(url = response_iniital.json()['ChunkUri'], files = files )
+    # in production, check to see if response_files.status_code == 200, check for connection timeout, etc.
+
     # response can be 200 and still not really be successful
     if response_files.status_code < 300 and response_files.text != "OK":
         sys.stderr.write("Some error occurred: {error}\n".format(error = response_files.text))
